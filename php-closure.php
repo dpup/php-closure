@@ -189,7 +189,6 @@ class PhpClosure {
         }
       }
     }
-    echo exit;
   }
 
   // ----- Privates -----
