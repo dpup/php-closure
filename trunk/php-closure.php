@@ -181,7 +181,7 @@ class PhpClosure {
         header("Last-Modified: ".gmdate("D, d M Y H:i:s", $cache_mtime)." GMT"); 
         header("Etag: $etag"); 
         if (@strtotime(@$_SERVER['HTTP_IF_MODIFIED_SINCE']) == $cache_mtime || 
-            trim(@$_SERVER['HTTP_IF_NONE_MATCH']) == $etag) { 
+            @trim(@$_SERVER['HTTP_IF_NONE_MATCH']) == $etag) { 
           header("HTTP/1.1 304 Not Modified"); 
         } else {
           // Read the cache file and send it to the client.
