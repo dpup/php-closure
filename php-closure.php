@@ -214,7 +214,10 @@ class PhpClosure {
   }
 
   function _compile() {
-     $tree = $this->_parseXml($this->_makeRequest());
+    // Quieten strict notices.
+    $code = $originalSize = $originalGzipSize = $compressedSize = $compressedGzipSize = $compileTime = '';
+
+    $tree = $this->_parseXml($this->_makeRequest());
 
     $result = $tree[0]["value"];
     foreach ($result as $node) {
@@ -247,8 +250,8 @@ class PhpClosure {
                 "Compressed Gzip Size: $compressedGzipSize\\n" .
                 "Compile Time: $compileTime\\n" .
                 "Generated: " . Date("Y/m/d H:i:s T") . "');\r\n";
-      if ($errors) $result .= $this->_printWarnings($errors, "error");
-      if ($warnings) $result .= $this->_printWarnings($warnings, "warn");
+      if (isset($errors)) $result .= $this->_printWarnings($errors, "error");
+      if (isset($warnings)) $result .= $this->_printWarnings($warnings, "warn");
       $result .= "}\r\n\r\n";
     }
     $result .= "$code \r\n";
