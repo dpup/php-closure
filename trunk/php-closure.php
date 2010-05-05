@@ -50,6 +50,7 @@ class PhpClosure {
   var $_pretty_print = false;
   var $_debug = true;
   var $_cache_dir = "";
+  var $_code_url_prefix = "";
 
   function PhpClosure() { }
 
@@ -78,6 +79,33 @@ class PhpClosure {
    */
   function useClosureLibrary() {
     $this->_use_closure_library = true;
+    return $this;
+  }
+
+  /**
+   * Sets the URL prefix to use with the Closure Compiler service's code_url
+   * parameter.
+   *
+   * By default PHP-Closure posts the scripts to the compiler service, however,
+   * this is subject to a 200000-byte size limit for the whole post request.
+   *
+   * Using code_url tells the compiler service the URLs of the scripts to
+   * fetch.  The file paths added in add() must therefore be relative to this
+   * URL.
+   *
+   * Example usage:
+   *
+   * $c->add("js/my-app.js")
+   *   ->add("js/popup.js")
+   *   ->useCodeUrl('http://www.example.com/app/')
+   *   ->cacheDir("/tmp/js-cache/")
+   *   ->write();
+   *
+   * This assumes your PHP script is in a directory /app/ and that the JS is in
+   * /app/js/ and accessible via HTTP.
+   */
+  function useCodeUrl($code_url_prefix) {
+    $this->_code_url_prefix = $code_url_prefix;
     return $this;
   }
 
@@ -295,7 +323,16 @@ class PhpClosure {
 
   function _getParamList() {
     $params = array();
-    $params["js_code"] = $this->_readSources();
+    if ($this->_code_url_prefix) {
+      // Send the URL to each source file instead of the raw source.
+      $i = 0;
+      foreach($this->_srcs as $file){
+        $params["code_url_$i"] = $this->_code_url_prefix . $file;
+        $i++;
+      }
+    } else {
+      $params["js_code"] = $this->_readSources();
+    }
     $params["compilation_level"] = $this->_mode;
     $params["output_format"] = "xml";
     $params["warning_level"] = $this->_warning_level;
