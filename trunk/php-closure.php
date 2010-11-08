@@ -348,7 +348,7 @@ class PhpClosure {
   function _readSources() {
     $code = "";
     foreach ($this->_srcs as $src) {
-      $code .= file_get_contents($src);
+      $code .= file_get_contents($src) . '\n\n';
     }
     return $code;
   }
