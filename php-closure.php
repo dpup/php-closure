@@ -247,7 +247,7 @@ class PhpClosure {
 
     $tree = $this->_parseXml($this->_makeRequest());
 
-    $result = $tree[0]["value"];
+    $result = $tree;
     foreach ($result as $node) {
       switch ($node["tag"]) {
         case "compiledCode": $code = $node["value"]; break;
@@ -348,7 +348,7 @@ class PhpClosure {
   function _readSources() {
     $code = "";
     foreach ($this->_srcs as $src) {
-      $code .= file_get_contents($src) . '\n\n';
+      $code .= file_get_contents($src) . "\n\n";
     }
     return $code;
   }
@@ -399,40 +399,21 @@ class PhpClosure {
   }
 
   function _parseXml($data) {
-    // &lt; trips up the XML parser.  Hack to fix it here.
-    $data = str_replace("&lt;", "---LTLTLTLT---", $data);
-    $xml = new XMLReader();
-    $xml->xml($data);
+    $xml = new SimpleXMLElement($data);
     return $this->_parseXmlHelper($xml);
   }
 
   function _parseXmlHelper($xml) {
-    $tree = null; 
-    while($xml->read()) 
-      switch ($xml->nodeType) { 
-        case XMLReader::END_ELEMENT: return $tree; 
-        case XMLReader::ELEMENT: 
-          $node = array('tag' => $xml->name, 'value' => $xml->isEmptyElement ? '' : $this->_parseXmlHelper($xml)); 
-          if($xml->hasAttributes) {
-            while($xml->moveToNextAttribute()) {
-              $node['attributes'][$xml->name] = str_replace("---LTLTLTLT---", "<", $xml->value);
-            }
-          }
-          $tree[] = $node; 
-        break; 
-        case XMLReader::TEXT:
-        case XMLReader::CDATA: 
-          $tree .=  str_replace("---LTLTLTLT---", "<", $xml->value);
-          break;
-        default:
-          die("\r\nUnknown node type\r\n" .
-              $xml->nodeType . "\r\n" .
-              $xml->name . "\r\n" .
-              $xml->value);
-      } 
-    return $tree; 
-  } 
+    $tree = null;
+    foreach ($xml->children() as $name => $child) {
+      $value = (string)$child;
+      $node = array('tag' => $name, 'value' => count($child->children()) == 0 ? $value : $this->_parseXmlHelper($child));
 
+      foreach ($child->attributes() as $attr => $value) {
+        $node['attributes'][$attr] = $value[0];
+      }
+      $tree[] = $node;
+    }
+    return $tree;
+  }
 }
-
-?>
