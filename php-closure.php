@@ -357,7 +357,7 @@ class PhpClosure {
     $data = $this->_getParams();
     $referer = @$_SERVER["HTTP_REFERER"] or "";
 
-    $fp = fsockopen("closure-compiler.appspot.com", 80) or die("Unable to open socket");;
+    $fp = fsockopen("ssl://closure-compiler.appspot.com", 443) or die("Unable to open socket");
 
     if ($fp) {
       fputs($fp, "POST /compile HTTP/1.1\r\n");
